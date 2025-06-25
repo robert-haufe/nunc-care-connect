@@ -8,24 +8,38 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Coffee, Settings, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useTickets } from "@/contexts/TicketsContext";
 
 const CustomerTicket = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { addTicket } = useTickets();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    deviceType: "",
+    customerName: "Natalie", // Default customer name
+    deviceType: "" as "machine" | "grinder" | "",
     issueCategory: "",
     description: "",
-    urgency: "medium"
+    urgency: "medium" as "low" | "medium" | "high"
   });
 
   const handleSubmit = () => {
-    toast({
-      title: "Ticket submitted successfully",
-      description: "Our support team will get back to you within 24 hours.",
-    });
-    navigate("/");
+    if (formData.deviceType && formData.issueCategory && formData.description.trim()) {
+      addTicket({
+        customerName: formData.customerName,
+        deviceType: formData.deviceType,
+        issueCategory: formData.issueCategory,
+        description: formData.description,
+        urgency: formData.urgency,
+        estimatedType: "hardware" // This will be overridden by the context logic
+      });
+
+      toast({
+        title: "Ticket submitted successfully",
+        description: "Our support team will get back to you within 24 hours.",
+      });
+      navigate("/");
+    }
   };
 
   return (
@@ -150,7 +164,7 @@ const CustomerTicket = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Urgency level
                 </label>
-                <Select onValueChange={(value) => setFormData({...formData, urgency: value})} defaultValue="medium">
+                <Select onValueChange={(value) => setFormData({...formData, urgency: value as "low" | "medium" | "high"})} defaultValue="medium">
                   <SelectTrigger className="h-12 rounded-xl border-gray-200">
                     <SelectValue />
                   </SelectTrigger>

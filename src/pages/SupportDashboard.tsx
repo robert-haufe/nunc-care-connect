@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,63 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Coffee, Settings, Search, Filter, Clock, AlertCircle, CheckCircle, User, ArrowRight } from "lucide-react";
-
-interface Ticket {
-  id: string;
-  customerName: string;
-  deviceType: "machine" | "grinder";
-  issueCategory: string;
-  description: string;
-  urgency: "low" | "medium" | "high";
-  status: "new" | "assigned" | "in-progress" | "resolved";
-  assignedExpert?: string;
-  suggestedSolution?: string;
-  createdAt: string;
-  estimatedType: "hardware" | "software" | "user-error" | "maintenance";
-}
-
-const mockTickets: Ticket[] = [
-  {
-    id: "T-001",
-    customerName: "Sarah Chen",
-    deviceType: "machine",
-    issueCategory: "leaking",
-    description: "Coffee machine is leaking water from the bottom. Started yesterday morning. Water pools under the machine after each brew cycle.",
-    urgency: "high",
-    status: "new",
-    suggestedSolution: "Hardware issue detected: Likely internal seal failure. Recommend replacement unit.",
-    createdAt: "2024-01-15T09:30:00Z",
-    estimatedType: "hardware",
-    assignedExpert: "Simon (Logistics)"
-  },
-  {
-    id: "T-002", 
-    customerName: "Michael Weber",
-    deviceType: "grinder",
-    issueCategory: "grinding",
-    description: "Grinder makes loud grinding noise and coffee comes out very inconsistent. Some beans seem to get stuck.",
-    urgency: "medium",
-    status: "assigned",
-    assignedExpert: "Emma (Hardware)",
-    createdAt: "2024-01-14T14:20:00Z",
-    estimatedType: "hardware"
-  },
-  {
-    id: "T-003",
-    customerName: "Lisa Park",
-    deviceType: "machine", 
-    issueCategory: "brewing",
-    description: "Coffee tastes very weak even on strongest setting. Used to work fine but gradually getting weaker over past week.",
-    urgency: "medium",
-    status: "in-progress",
-    assignedExpert: "David (Software)",
-    createdAt: "2024-01-13T11:15:00Z",
-    estimatedType: "maintenance"
-  }
-];
+import { useTickets, Ticket } from "@/contexts/TicketsContext";
 
 const SupportDashboard = () => {
-  const [tickets] = useState<Ticket[]>(mockTickets);
+  const { tickets } = useTickets();
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [filter, setFilter] = useState("all");
 
@@ -94,6 +40,10 @@ const SupportDashboard = () => {
     if (filter === "all") return true;
     return ticket.status === filter;
   });
+
+  // Calculate stats from real ticket data
+  const newTicketsCount = tickets.filter(t => t.status === "new").length;
+  const inProgressCount = tickets.filter(t => t.status === "in-progress" || t.status === "assigned").length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
@@ -135,7 +85,7 @@ const SupportDashboard = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">New tickets</p>
-                  <p className="text-2xl font-semibold">1</p>
+                  <p className="text-2xl font-semibold">{newTicketsCount}</p>
                 </div>
               </div>
             </Card>
@@ -146,7 +96,7 @@ const SupportDashboard = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">In progress</p>
-                  <p className="text-2xl font-semibold">2</p>
+                  <p className="text-2xl font-semibold">{inProgressCount}</p>
                 </div>
               </div>
             </Card>
@@ -180,43 +130,54 @@ const SupportDashboard = () => {
           <div className="col-span-8">
             <Card className="bg-white">
               <div className="p-6 border-b">
-                <h2 className="text-lg font-medium">Support tickets</h2>
+                <h2 className="text-lg font-medium">Support tickets ({filteredTickets.length})</h2>
               </div>
               <div className="divide-y">
-                {filteredTickets.map((ticket) => (
-                  <div
-                    key={ticket.id}
-                    className={`p-6 hover:bg-gray-50 cursor-pointer transition-colors ${
-                      selectedTicket?.id === ticket.id ? "bg-blue-50" : ""
-                    }`}
-                    onClick={() => setSelectedTicket(ticket)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <span className="font-mono text-sm text-gray-600">{ticket.id}</span>
-                          <div className="flex items-center space-x-1">
-                            {getTypeIcon(ticket.deviceType)}
-                            <span className="text-sm capitalize">{ticket.deviceType}</span>
-                          </div>
-                          <Badge className={getUrgencyColor(ticket.urgency)}>
-                            {ticket.urgency}
-                          </Badge>
-                          <Badge className={getStatusColor(ticket.status)}>
-                            {ticket.status.replace('-', ' ')}
-                          </Badge>
-                        </div>
-                        <h3 className="font-medium text-gray-900 mb-1">{ticket.customerName}</h3>
-                        <p className="text-sm text-gray-600 mb-2 capitalize">{ticket.issueCategory.replace('-', ' ')}</p>
-                        <p className="text-sm text-gray-700 line-clamp-2">{ticket.description}</p>
-                        {ticket.assignedExpert && (
-                          <p className="text-xs text-blue-600 mt-2">Assigned to: {ticket.assignedExpert}</p>
-                        )}
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-gray-400 mt-2" />
-                    </div>
+                {filteredTickets.length === 0 ? (
+                  <div className="p-6 text-center text-gray-500">
+                    <p>No tickets found matching your filter criteria.</p>
                   </div>
-                ))}
+                ) : (
+                  filteredTickets.map((ticket) => (
+                    <div
+                      key={ticket.id}
+                      className={`p-6 hover:bg-gray-50 cursor-pointer transition-colors ${
+                        selectedTicket?.id === ticket.id ? "bg-blue-50" : ""
+                      }`}
+                      onClick={() => setSelectedTicket(ticket)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <span className="font-mono text-sm text-gray-600">{ticket.id}</span>
+                            <div className="flex items-center space-x-1">
+                              {getTypeIcon(ticket.deviceType)}
+                              <span className="text-sm capitalize">{ticket.deviceType}</span>
+                            </div>
+                            <Badge className={getUrgencyColor(ticket.urgency)}>
+                              {ticket.urgency}
+                            </Badge>
+                            <Badge className={getStatusColor(ticket.status)}>
+                              {ticket.status.replace('-', ' ')}
+                            </Badge>
+                            {ticket.status === "new" && (
+                              <Badge className="bg-green-100 text-green-800 border-green-200">
+                                New
+                              </Badge>
+                            )}
+                          </div>
+                          <h3 className="font-medium text-gray-900 mb-1">{ticket.customerName}</h3>
+                          <p className="text-sm text-gray-600 mb-2 capitalize">{ticket.issueCategory.replace('-', ' ')}</p>
+                          <p className="text-sm text-gray-700 line-clamp-2">{ticket.description}</p>
+                          {ticket.assignedExpert && (
+                            <p className="text-xs text-blue-600 mt-2">Assigned to: {ticket.assignedExpert}</p>
+                          )}
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-gray-400 mt-2" />
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </Card>
           </div>
