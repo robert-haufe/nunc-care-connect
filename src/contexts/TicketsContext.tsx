@@ -33,10 +33,10 @@ const mockTickets: Ticket[] = [
     description: "Coffee machine is leaking water from the bottom. Started yesterday morning. Water pools under the machine after each brew cycle.",
     urgency: "high",
     status: "new",
-    suggestedSolution: "Hardware issue detected: Likely internal seal failure. Recommend replacement unit.",
+    suggestedSolution: "Exchange of one unit (espresso) suggested: Leaking Brewhead, the unit will be returned and exchange delivery will be send out to customer",
     createdAt: "2024-01-15T09:30:00Z",
     estimatedType: "hardware",
-    assignedExpert: "Simon (Logistics)"
+    assignedExpert: "Mischa (Technical Support)"
   },
   {
     id: "T-002", 
@@ -107,7 +107,7 @@ export const useTickets = () => {
 // Helper functions for AI analysis simulation
 const generateSuggestedSolution = (ticket: Omit<Ticket, 'id' | 'createdAt' | 'status'>): string => {
   if (ticket.issueCategory.includes('leaking')) {
-    return "Hardware issue detected: Likely internal seal failure. Recommend replacement unit.";
+    return "Exchange of one unit (espresso) suggested: Leaking Brewhead, the unit will be returned and exchange delivery will be send out to customer";
   }
   if (ticket.issueCategory.includes('grinding')) {
     return "Hardware issue detected: Grinder mechanism may need cleaning or replacement. Check for bean residue buildup.";
@@ -123,7 +123,7 @@ const generateSuggestedSolution = (ticket: Omit<Ticket, 'id' | 'createdAt' | 'st
 
 const assignExpert = (ticket: Omit<Ticket, 'id' | 'createdAt' | 'status'>): string => {
   if (ticket.issueCategory.includes('leaking') && ticket.urgency === 'high') {
-    return "Simon (Logistics)";
+    return "Mischa (Technical Support)";
   }
   if (ticket.issueCategory.includes('grinding') || ticket.issueCategory.includes('jamming')) {
     return "Emma (Hardware)";

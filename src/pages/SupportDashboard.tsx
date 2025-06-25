@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -5,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Coffee, Settings, Search, Filter, Clock, AlertCircle, CheckCircle, User, ArrowRight } from "lucide-react";
+import { Coffee, Settings, Search, Filter, Clock, AlertCircle, CheckCircle, User, ArrowRight, Truck, MessageSquare, Wrench } from "lucide-react";
 import { useTickets, Ticket } from "@/contexts/TicketsContext";
 
 const SupportDashboard = () => {
@@ -44,6 +45,11 @@ const SupportDashboard = () => {
   // Calculate stats from real ticket data
   const newTicketsCount = tickets.filter(t => t.status === "new").length;
   const inProgressCount = tickets.filter(t => t.status === "in-progress" || t.status === "assigned").length;
+
+  const handleTaskAssignment = (taskType: string) => {
+    console.log(`Assigning task: ${taskType}`);
+    // Here you would trigger the actual task assignment logic
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
@@ -226,45 +232,67 @@ const SupportDashboard = () => {
                     </p>
                   </div>
 
-                  {selectedTicket.suggestedSolution && (
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 mb-2">AI Analysis & Suggestion</p>
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
-                            {selectedTicket.estimatedType}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-blue-900">{selectedTicket.suggestedSolution}</p>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 mb-2">AI Analysis & Resolution</p>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300">
+                          Hardware Exchange Required
+                        </Badge>
                       </div>
+                      <p className="text-sm text-blue-900 font-medium mb-2">
+                        Exchange of one unit (espresso) suggested: Leaking Brewhead
+                      </p>
+                      <p className="text-sm text-blue-800">
+                        The unit will be returned and exchange delivery will be sent out to customer
+                      </p>
                     </div>
-                  )}
+                  </div>
 
-                  {selectedTicket.assignedExpert && (
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 mb-2">Assigned expert</p>
-                      <div className="flex items-center space-x-3 bg-green-50 border border-green-200 rounded-lg p-3">
-                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                          <User className="h-4 w-4 text-green-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-green-900">{selectedTicket.assignedExpert}</p>
-                          <p className="text-xs text-green-700">Available for consultation</p>
-                        </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 mb-2">Assigned expert</p>
+                    <div className="flex items-center space-x-3 bg-green-50 border border-green-200 rounded-lg p-3">
+                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                        <User className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-green-900">Mischa (Technical Support)</p>
+                        <p className="text-xs text-green-700">Available for consultation</p>
                       </div>
                     </div>
-                  )}
+                  </div>
 
                   <div className="space-y-3">
-                    <Button className="w-full bg-green-500 hover:bg-green-600 text-white">
-                      Start resolution process
+                    <h3 className="text-sm font-medium text-gray-900">Task Assignment</h3>
+                    
+                    <Button 
+                      className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                      onClick={() => handleTaskAssignment('logistics')}
+                    >
+                      <Truck className="h-4 w-4 mr-2" />
+                      Task Logistics (Simon)
                     </Button>
-                    <Button variant="outline" className="w-full">
-                      Contact customer
+                    <p className="text-xs text-gray-600 -mt-2 mb-3">Create return label and send out exchange coffee machine</p>
+
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => handleTaskAssignment('customer-support')}
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Task Customer Support
                     </Button>
-                    <Button variant="outline" className="w-full">
-                      Escalate to expert
+                    <p className="text-xs text-gray-600 -mt-2 mb-3">Communicate resolution, share return label and tracking link</p>
+
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => handleTaskAssignment('technical-support')}
+                    >
+                      <Wrench className="h-4 w-4 mr-2" />
+                      Task Technical Support Team
                     </Button>
+                    <p className="text-xs text-gray-600 -mt-2">Prepare for incoming device, plan capacity and exchange parts</p>
                   </div>
                 </div>
               </Card>
